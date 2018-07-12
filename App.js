@@ -29,12 +29,12 @@ export default class App extends Component {
         this.setState({ loading: false });
 
         firebase.initializeApp({
-            apiKey: "AIzaSyBapJKYDNxHPF6fEN3ICaCOafSGpKWimrE",
-            authDomain: "filter-and-industrial-app.firebaseapp.com",
-            databaseURL: "https://filter-and-industrial-app.firebaseio.com",
-            projectId: "filter-and-industrial-app",
-            storageBucket: "filter-and-industrial-app.appspot.com",
-            messagingSenderId: "483513992730"
+            apiKey: "AIzaSyCX4VSs-0vNU1t6F_AZU5c_obA4d9DoIYk",
+            authDomain: "filter-and-industrial-a3c23.firebaseapp.com",
+            databaseURL: "https://filter-and-industrial-a3c23.firebaseio.com",
+            projectId: "filter-and-industrial-a3c23",
+            storageBucket: "filter-and-industrial-a3c23.appspot.com",
+            messagingSenderId: "281438456060"
         });
 
         firebase.auth().onAuthStateChanged((user) => {

@@ -1,13 +1,14 @@
 import parts from "./parts.json";
 
 const initialState = {
+    title: 'My Parts List',
+    token: '',
     parts,
     addPartView: false,
-    token: '',
     error: '',
     user: false,
     loading: false,
-    machineNumberUnitNumberOrRego: '1234567',
+    machineNumberUnitNumberOrRego: 'Testing add with fields 6',
     oilFIlter1: 'test oil filter 1',
     oilFilter2: 'test oil filter 2',
     fuelFilter1: 'test fuel filter 1',
@@ -27,6 +28,16 @@ const initialState = {
 
 export default (state = initialState, action) => {
     switch (action.type) {
+        case 'SET_USER':
+            return {
+                ...state,
+                user: action.payload
+            }
+        case 'UPDATE_TITLE':
+            return {
+                ...state,
+                title: action.payload
+            };
         case 'LOADER_SHOW':
             return {
                 ...state,
@@ -42,11 +53,6 @@ export default (state = initialState, action) => {
                 ...state,
                 drawerOpen: true
             };
-        case 'SET_TOKEN':
-            return {
-                ...state,
-                token: action.payload
-            };
         case 'FORM_UPDATE':
             return {
                 ...state,
@@ -56,18 +62,41 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 loading: false,
-                addPartView: false
+                addPartView: false,
+                title: 'My Parts List'
             };
         case 'FORM_ADD_PART':
             return {
                 ...state,
                 addPartView: true
-            }
+            };
         case 'REPLACE_INITIAL_PARTS':
             return {
                 ...state,
                 parts: action.payload,
                 loading: false
+            };
+        case 'ERROR_FETCHING_PARTS':
+            return {
+                ...state,
+                parts,
+                loading: false,
+                error: action.payload
+            };
+        case 'PART_FORM_SHOW':
+            return {
+                ...state,
+                addPartView: true
+            };
+        case 'PART_FORM_HIDE':
+            return {
+                ...state,
+                addPartView: false
+            };
+        case "UPDATE_ERROR_MESSAGE":
+            return {
+                ...state,
+                error: action.payload
             }
         default:
             return state;

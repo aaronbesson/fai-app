@@ -1,5 +1,18 @@
 import { wpApiBaseUrl } from '../../config';
-// import firebase from 'firebase';
+
+export const setUser = (user) => {
+    return {
+        type: 'SET_USER',
+        payload: user
+    }
+}
+
+export const updateTitle = (title) => {
+    return {
+        type: 'UPDATE_TITLE',
+        payload: title
+    }
+}
 
 export const showLoader = () => {
     return {
@@ -26,13 +39,6 @@ export const selectPart = (partId) => {
     }
 }
 
-export const setToken = (token) => {
-    return {
-        type: 'SET_TOKEN',
-        payload: token,
-    };
-};
-
 export const formUpdate = ({ prop, value }) => {
     return {
         type: 'FORM_UPDATE',
@@ -40,16 +46,22 @@ export const formUpdate = ({ prop, value }) => {
     };
 };
 
-export const formAddPart = () => {
+export const showAddPartForm = () => {
     return {
-        type: 'FORM_ADD_PART'
+        type: 'PART_FORM_SHOW'
+    }
+}
+
+export const hideAddPartForm = () => {
+    return {
+        type: 'PART_FORM_HIDE'
     }
 }
 
 export const createNewPart = ({ token, machineNumberUnitNumberOrRego, oilFIlter1, oilFilter2, fuelFilter1, fuelFilter2, airFilterInner, airFilterOuter, hydraulicFilter1, hydraulicFilter2, transmissionFilter, steeringFilter, coolantFilter, cabinAirFilter, serviceInterval, companyName}) => {
-    const postTitle = `user-part-entry-${Date.now()}`;
+    const postTitle = machineNumberUnitNumberOrRego;
     const newPartUrl =  `${wpApiBaseUrl}/wp/v2/parts?title=${postTitle}&status=publish`;
-    const addUrlParams = `${machineNumberUnitNumberOrRego}/${oilFIlter1}/${oilFilter2}/${fuelFilter1}/${fuelFilter2}/${airFilterInner}/${airFilterOuter}/${hydraulicFilter1}/${hydraulicFilter2}/${transmissionFilter}/${steeringFilter}/${coolantFilter}/${cabinAirFilter}/${serviceInterval}/${companyName}`;
+    const addUrlParams = `${machineNumberUnitNumberOrRego.replace(/ /g,"-")}/${oilFIlter1.replace(/ /g,"-")}/${oilFilter2.replace(/ /g,"-")}/${fuelFilter1.replace(/ /g,"-")}/${fuelFilter2.replace(/ /g,"-")}/${airFilterInner.replace(/ /g,"-")}/${airFilterOuter.replace(/ /g,"-")}/${hydraulicFilter1.replace(/ /g,"-")}/${hydraulicFilter2.replace(/ /g,"-")}/${transmissionFilter.replace(/ /g,"-")}/${steeringFilter.replace(/ /g,"-")}/${coolantFilter.replace(/ /g,"-")}/${cabinAirFilter.replace(/ /g,"-")}/${serviceInterval.replace(/ /g,"-")}/${companyName.replace(/ /g,"-")}`;
     return (dispatch) => {
         fetch(newPartUrl, {
             method: 'POST',
@@ -60,12 +72,13 @@ export const createNewPart = ({ token, machineNumberUnitNumberOrRego, oilFIlter1
         .then((r) => r.json())
         .then((rJson) => {
             // update new part fields
-            console.log('add success!');
+            console.log('post created');
+            console.log(addUrlParams);
             let partsFieldUpdate = `${wpApiBaseUrl}/fappconnect/v1/part/update-fields/${rJson.id}/${addUrlParams}`;
-            fetch(partsFieldUpdate)
+            fetch(partsFieldUpdate, {method: 'GET'})
             .then((r) => r.json())
             .then((rjson) => {
-                console.log('create fields success')
+                console.log(rjson);
                 dispatch({
                     type: 'CREATE_NEW_PART'
                 })
@@ -76,15 +89,32 @@ export const createNewPart = ({ token, machineNumberUnitNumberOrRego, oilFIlter1
     }
 };
 
+export const errorFetchingParts = () => {
+    return {
+        type: 'ERROR_FETCHING_PARTS',
+        payload: 'Something went wrong fetching parts data.'
+    }
+}
+
 export const replaceInitialParts = () => {
     return (dispatch) => {
-        fetch(`${wpApiBaseUrl}/wp/v2/parts`)
+        fetch(`${wpApiBaseUrl}/wp/v2/parts?author=5&per_page=50`)
         .then((res)=>res.json())
         .then((responseJson) => {
             dispatch({
                 type: 'REPLACE_INITIAL_PARTS',
                 payload: responseJson
             })
-        });
+        }).catch((err) => {
+            console.log(err);
+            errorFetchingParts();
+        })
+    }
+}
+
+export const updateErrorMessage = (errorString) => {
+    return {
+        type: 'UPDATE_ERROR_MESSAGE',
+        payload: errorString
     }
 }

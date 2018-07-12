@@ -1,21 +1,19 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, TextInput, Dimensions, Image, AsyncStorage } from 'react-native';
+import { StyleSheet, Text, TextInput, Dimensions, Image, AsyncStorage, KeyboardAvoidingView } from 'react-native';
 import { Button, Container } from 'native-base';
 import firebase from 'firebase';
 import Loader from './Loader';
-
-import { apiurl, wpApiBaseUrl } from '../config';
-
 import { connect } from 'react-redux';
 import * as actions from '../lib/actions';
 
-export default class Login extends Component {
+import { wpApiBaseUrl } from '../config';
+
+class Login extends Component {
 
     state = {
         email: '',
         password: '',
         error: '',
-        token: '',
         loading: false
     };
 
@@ -41,19 +39,20 @@ export default class Login extends Component {
         })
         .then((response)=>response.json())
         .then((responseJson)=>{
-            // console.log(responseJson);
+            console.log(`response from wordpress jwt_auth: ${responseJson}`);
             if(responseJson.token) {
-                console.log('success getting token');
-                this.setState({token:responseJson.token})
+                this.setState({token: responseJson.token});
                 this._handleFirebaseAuth();
+                this.props.updateErrorMessage('');
             } else {
-                // handle login failure
-                this._onAuthFailed();
                 console.log(responseJson);
+                this.props.updateErrorMessage(responseJson.message.replace(/(<([^>]+)>)/ig,""));
+                this.setState({loading:false})
             }
         })
-        .catch((err)=>console.error(err))
-        
+        .catch((err)=>{
+            console.error(err)
+        })
     };
 
     _handleFirebaseAuth() {
@@ -66,34 +65,18 @@ export default class Login extends Component {
             firebase.auth().createUserWithEmailAndPassword(email, password)
                 .then(this._onAuthSuccess.bind(this))
                 .catch((err) => {
-                    this._onAuthFailed.bind(this);
-                    this.setState(
-                        {
-                            error: err.message,
-                            loading: false
-                        }
-                    )
+                    console.error(err.message);
                 });
         });  
     }
 
     _onAuthSuccess = () => {
         AsyncStorage.setItem('@usertoken:key', this.state.token );
-        console.log('logged in!');
         this.setState(
             {
                 email: '',
+                password: '',
                 error: '',
-                loading: false
-            }
-        )
-    }
-
-    _onAuthFailed() {
-        console.log('fail!');
-        this.setState(
-            {
-                error: 'Authentication Failed',
                 loading: false
             }
         )
@@ -113,8 +96,8 @@ export default class Login extends Component {
     
     render() {
         return (
-            <Container style={styles.container}>
-                    <Image style={styles.logoStyle} source={require('../assets/logo/logo.png')} />
+            <KeyboardAvoidingView behavior="padding" style={styles.container}>
+                <Image style={styles.logoStyle} source={require('../assets/logo/logo.png')} />
                 <TextInput
                     shadowColor={'#333'}
                     shadowOffset={{width:1, height:2}}
@@ -134,9 +117,9 @@ export default class Login extends Component {
                 />
                 {this._renderLoader()}
                 <Text style={styles.errorMessage}>
-                    {this.state.error}
+                    {this.props.error}
                 </Text>
-            </Container>
+            </KeyboardAvoidingView>
         );
     }
 }
@@ -153,7 +136,7 @@ const styles = StyleSheet.create({
     logoStyle: {
         width: 301,
         height: 41,
-        marginBottom: 50
+        marginBottom: 20
     },
     textInputStyle: {
         width: Dimensions.get('window').width - 20,
@@ -181,3 +164,14 @@ const styles = StyleSheet.create({
         marginTop: 10
     }
 });
+
+const mapStateToProps = (state) => {
+    const { setUser, updateErrorMessage, error } = state;
+    return {
+        setUser,
+        updateErrorMessage,
+        error
+    }
+}
+
+export default connect(mapStateToProps, actions)(Login);
